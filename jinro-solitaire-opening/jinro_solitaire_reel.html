@@ -105,10 +105,13 @@ function makeFace(role){
     g.beginPath(); g.arc(0,0,40,0,Math.PI*2); g.fill(); g.fillStyle = '#0D0F1F'; g.beginPath(); g.arc(0,0,17,0,Math.PI*2); g.fill();
     g.fillStyle = goldHi(1); g.beginPath(); g.arc(9,-9,6,0,Math.PI*2); g.fill();
     g.lineWidth = 3; for (let i = -3; i <= 3; i++) { const a = -Math.PI/2 + i*.3; g.beginPath(); g.moveTo(Math.cos(a)*80, Math.sin(a)*80 - 10); g.lineTo(Math.cos(a)*112, Math.sin(a)*112 - 10); g.stroke(); }
-  } else if (role.key === 'knight') {                               // shield + sword
-    g.lineWidth = 7; g.beginPath(); g.moveTo(0,-110); g.lineTo(88,-78); g.quadraticCurveTo(88,40,0,112); g.quadraticCurveTo(-88,40,-88,-78); g.closePath(); g.stroke();
-    g.lineWidth = 3; g.beginPath(); g.moveTo(0,-90); g.lineTo(70,-64); g.quadraticCurveTo(70,30,0,90); g.quadraticCurveTo(-70,30,-70,-64); g.closePath(); g.stroke();
-    g.fillRect(-7,-80,14,150); g.fillRect(-42,-34,84,14); g.beginPath(); g.moveTo(-7,70); g.lineTo(0,92); g.lineTo(7,70); g.fill();
+  } else if (role.key === 'madman') {                               // cracked mask with a crooked grin
+    g.lineWidth = 7; g.beginPath(); g.moveTo(0,-112); g.bezierCurveTo(78,-112,92,-30,80,20); g.bezierCurveTo(66,80,26,112,0,112);
+    g.bezierCurveTo(-26,112,-66,80,-80,20); g.bezierCurveTo(-92,-30,-78,-112,0,-112); g.closePath(); g.stroke();
+    for (const sx of [-1,1]) { g.beginPath(); g.moveTo(sx*18,-28); g.quadraticCurveTo(sx*40,-54 + (sx>0?10:0),sx*60,-34); g.quadraticCurveTo(sx*40,-22,sx*18,-28); g.fill(); }
+    g.lineWidth = 6; g.beginPath(); g.moveTo(-52,28); g.bezierCurveTo(-30,70,26,78,58,18); g.stroke();
+    g.lineWidth = 3; for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i*16, 50 - Math.abs(i)*6); g.lineTo(i*16 + 3, 62 - Math.abs(i)*8); g.stroke(); }
+    g.lineWidth = 3; g.beginPath(); g.moveTo(22,-112); g.lineTo(10,-78); g.lineTo(26,-60); g.lineTo(12,-36); g.stroke();
   } else if (role.key === 'villager') {                             // lantern
     g.lineWidth = 6; g.beginPath(); g.arc(0,-96,16,Math.PI,0); g.stroke();
     g.beginPath(); g.moveTo(-46,-76); g.lineTo(46,-76); g.lineTo(58,-56); g.lineTo(-58,-56); g.closePath(); g.fill();
@@ -122,10 +125,10 @@ function makeFace(role){
     for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(-120 + i*26, -150); g.quadraticCurveTo(-10 + i*26, 0, 110 + i*26, 150); g.stroke(); }
   }
   g.restore();
-  // corner index: rank + crescent suit
-  g.fillStyle = goldGrad(g, 30, 110); g.font = `800 44px ${DISPLAY}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
-  g.fillText(role.rank, 58, 86); crescent(g, 56, 114, 13, 7);
-  g.save(); g.translate(CW, CH); g.rotate(Math.PI); g.fillText(role.rank, 58, 86); crescent(g, 56, 114, 13, 7); g.restore();
+  // corner ornament (crescent only — the game has no card ranks)
+  g.fillStyle = goldGrad(g, 30, 110); g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  crescent(g, 58, 68, 14, 8);
+  g.save(); g.translate(CW, CH); g.rotate(Math.PI); crescent(g, 58, 68, 14, 8); g.restore();
   // role name
   g.fillStyle = isWolf ? '#ff6b73' : goldGrad(g, CH-120, CH-60);
   g.font = `900 52px ${SERIF}`; g.fillText(role.name, cx, CH - 64);
@@ -133,10 +136,10 @@ function makeFace(role){
   return c;
 }
 const ROLES = [
-  {key:'seer', name:'占い師', en:'SEER', rank:'Q'},
-  {key:'knight', name:'騎士', en:'KNIGHT', rank:'J'},
-  {key:'villager', name:'村人', en:'VILLAGER', rank:'10'},
-  {key:'wolf', name:'人狼', en:'WEREWOLF', rank:'A'},
+  {key:'seer', name:'占い師', en:'SEER'},
+  {key:'madman', name:'狂人', en:'MADMAN'},
+  {key:'villager', name:'村人', en:'VILLAGER'},
+  {key:'wolf', name:'人狼', en:'WEREWOLF'},
 ];
 let BACK, FACES;
 // textured full moon (fbm maria + mottling)
@@ -326,11 +329,11 @@ function drawTitle(t){
   ctx.save(); ctx.globalAlpha = mIn*(1 - reveal); ctx.drawImage(MOON, mx - mr, my - mr, mr*2, mr*2); ctx.restore();
   // the figure stays in the dark: it fades in over the moon, then gets crushed to a faint silhouette
   if (man.naturalWidth && reveal > 0) {
-    ctx.save(); ctx.globalAlpha = reveal; ctx.drawImage(man, ox, oy, iw, ih);
-    ctx.fillStyle = 'rgba(3,4,9,.84)'; ctx.fillRect(0,0,W,H); ctx.restore();
+    ctx.save(); ctx.globalAlpha = .7*reveal; ctx.drawImage(man, ox, oy, iw, ih);
+    ctx.globalAlpha = reveal; ctx.fillStyle = 'rgba(3,4,9,.92)'; ctx.fillRect(0,0,W,H); ctx.restore();   // subliminal: only a trace survives
     ctx.save(); ctx.globalCompositeOperation = 'lighter';                      // moonlight still reads through
     g = ctx.createRadialGradient(mx, my, 0, mx, my, mr*1.6);
-    g.addColorStop(0, gold(.5*reveal)); g.addColorStop(.6, gold(.25*reveal)); g.addColorStop(1, gold(0));
+    g.addColorStop(0, gold(.35*reveal)); g.addColorStop(.6, gold(.15*reveal)); g.addColorStop(1, gold(0));
     ctx.fillStyle = g; ctx.fillRect(mx - mr*2, my - mr*2, mr*4, mr*4); ctx.restore();
   }
   // drifting fog + motes
@@ -506,7 +509,7 @@ function loop(){ const t = Math.min(DUR, ac.currentTime - t0); draw(Math.max(0,t
   if (t < DUR) raf = requestAnimationFrame(loop); }
 document.getElementById('play').onclick = () => { cancelAnimationFrame(raf); if (ac) ac.close(); ac = new AudioContext(); t0 = buildAudio(ac, ac.destination); loop(); };
 window.renderFrame = draw; window.buildAudio = buildAudio;
-Promise.all([document.fonts.load(`900 132px ${SERIF}`, '人狼ソリティア嘘を見抜け占い師騎士村'), document.fonts.load(`800 44px ${DISPLAY}`, 'QJA10'),
+Promise.all([document.fonts.load(`900 132px ${SERIF}`, '人狼ソリティア嘘を見抜け占い師狂人村'), document.fonts.load(`600 17px ${DISPLAY}`, 'SEERMADNVILLAGWO'),
   document.fonts.load(`600 34px ${DISPLAY}`, 'WEREWOLF SOLITAIRE'), man.decode ? man.decode().catch(()=>{}) : 0]).catch(()=>{}).then(() => {
   BACK = (() => { const b = makeBack(); return b; })(); FACES = ROLES.map(makeFace);
   draw(3.9); document.getElementById('play').disabled = false; statusEl.textContent = '▶ で再生'; window.ready = true;
